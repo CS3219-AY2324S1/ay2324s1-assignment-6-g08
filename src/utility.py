@@ -34,3 +34,25 @@ def parse_output(str):
             return value
 
     return processed_str
+
+
+def extract_examples(soup):
+    if len(soup) == 0:
+        return [None, None]
+
+    # test cases usually in a <strong class="example"> tag
+    examples = soup.find_all("strong", class_="example")
+
+    inputs = []
+    outputs = []
+    for e in examples:
+        try:
+            pre = e.find_next("pre")
+            example = pre.find_all("strong")
+            tc_input = example[0].next_sibling.strip().replace("null", "None")
+            inputs.append(parse_input(tc_input))
+            tc_output = example[1].next_sibling.strip()
+            outputs.append(parse_output(tc_output))
+        except Exception:
+            return [None, None]
+    return [inputs, outputs]

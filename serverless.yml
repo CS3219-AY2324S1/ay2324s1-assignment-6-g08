@@ -1,1 +1,31 @@
-# your code here
+service: question-service-serverless
+
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: ap-southeast-1
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    noDeploy:
+      - typing
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.github'
+    - '!__pycache__/**'
+
+functions:
+  scrape:
+    handler: src/handler.update_question_database
+    timeout: 900
+    events:
+      - schedule: rate(30 days)

@@ -1,4 +1,14 @@
+# package directories
+node_modules/
+
+# Serverless directories
+.serverless/
+
+# Environments
 .env
-__pycache__
-.pytest_cache
+
+# Byte-compiled files
+__pycache__/
+
+# macOS files
 .DS_store
