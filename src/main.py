@@ -67,3 +67,10 @@ def fetch_questions():
 
     except requests.RequestException as e:
         print(f"Error - {str(e)}")
+
+
+def update_question_database(event, context):
+    try:
+        fetch_questions()
+    except Exception as e:
+        print(f"Error - {str(e)}")

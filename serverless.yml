@@ -24,8 +24,8 @@ package:
     - '!__pycache__/**'
 
 functions:
-  scrape:
-    handler: src/handler.update_question_database
+  updateQuestionDatabase:
+    handler: src/main.update_question_database
     timeout: 900
     events:
       - schedule: rate(90 days)
