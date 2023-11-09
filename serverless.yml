@@ -28,4 +28,4 @@ functions:
     handler: src/handler.update_question_database
     timeout: 900
     events:
-      - schedule: rate(30 days)
+      - schedule: rate(90 days)

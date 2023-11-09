@@ -1,13 +1,14 @@
-from bs4 import BeautifulSoup
 import requests
-from src.utility import extract_examples
-from src.constants import GRAPHQL_ENDPOINT, GRAPHQL_QUERY, POST_REQUEST_HEADER, QUESTIONS_ENDPOINT, QUESTION_SERVICE_URI
+from src.constants import (GRAPHQL_ENDPOINT, GRAPHQL_QUERY,
+                           POST_REQUEST_HEADER, QUESTION_LIST_ENDPOINT,
+                           QUESTION_SERVICE_URI)
+from src.utility import extract_test_cases, get_code_templates
 
 
 def _fetch_title_slugs():
     for _ in range(5):
         try:
-            response = requests.get(QUESTIONS_ENDPOINT)
+            response = requests.get(QUESTION_LIST_ENDPOINT)
             response.raise_for_status()
 
             data = response.json()["stat_status_pairs"]
@@ -46,30 +47,16 @@ def fetch_questions():
                 continue
 
             # test cases
-            soup = BeautifulSoup(q["content"], "html.parser")
-            tc_in, tc_out = extract_examples(soup)
-
+            tc_in, tc_out = extract_test_cases(q["content"])
             if tc_in is None and tc_out is None:
                 continue
-
-            # code templates
-            supported_slugs = ["javascript", "python", "ruby"]
-            code_snippets = q["codeSnippets"]
-            code_templates = {}
-
-            for snippet in code_snippets:
-                if snippet["langSlug"] in supported_slugs:
-                    code_templates.update(
-                        {snippet["langSlug"].capitalize(): snippet["code"]})
-                if len(code_templates) == len(supported_slugs):
-                    break
 
             question_data = {
                 "title": q["title"],
                 "categories": [tag["name"] for tag in q["topicTags"]],
                 "complexity": q["difficulty"],
-                "description": str(BeautifulSoup(q["content"], "html.parser")),
-                "codeTemplates": code_templates,
+                "description": q["content"],
+                "codeTemplates": get_code_templates(q["codeSnippets"]),
                 "inputs": tc_in,
                 "outputs": tc_out,
             }
@@ -78,7 +65,5 @@ def fetch_questions():
                           headers=POST_REQUEST_HEADER,
                           json=question_data)
 
-            print(f"Done - {q['title']}")
-
-    except requests.RequestException:
-        print("Test")
+    except requests.RequestException as e:
+        print(f"Error - {str(e)}")

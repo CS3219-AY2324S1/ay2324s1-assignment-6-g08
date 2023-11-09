@@ -1,13 +1,29 @@
+"""
+Contains all the utility functions need by the scraper.
+"""
+
 import re
+from bs4 import BeautifulSoup
 
 
-def parse_input(str):
+def parse_input(input_str):
+    """Parse test case inputs based on type
+
+    Test case inputs come in the form {variable_name=value} where value can be
+    of types string, integer or array. As eval is used, any None must be
+    converted to null for python to be able to call eval.
+
+    Parameters
+    ----------
+    input_str: str
+        unprocessed string containing inputs extracted from the example
+    """
+
     dict = {}
 
-    # regex to match input patterns
     pattern = r"(\w+)\s*=\s*(.*?)(?=\s*,\s*\w+\s*=\s*|\s*$)"
-    str = str.replace("null", "None")
-    matches = re.findall(pattern, str)
+    input_str = input_str.replace("null", "None")
+    matches = re.findall(pattern, input_str)
 
     for name, value in matches:
         try:
@@ -21,22 +37,68 @@ def parse_input(str):
     return dict
 
 
-def parse_output(str):
-    processed_str = str.replace("null", "None")
+def parse_output(output_str):
+    """Parse test case outputs based on type
+
+    Test case outputs come in the form {variable_name=value} where value can be
+    of types string, integer or array. As eval is used, any None must be
+    converted to null for python to be able to call eval.
+
+    Parameters
+    ----------
+    output_str: str
+        an unprocessed string containing outputs extracted from the example
+    """
+    output_str = output_str.replace("null", "None")
     value = None
 
     try:
-        value = float(processed_str)
+        value = float(output_str)
         return value
     except ValueError:
-        if processed_str.startswith("[") and processed_str.endswith("]"):
-            value = eval(processed_str)
+        if output_str.startswith("[") and output_str.endswith("]"):
+            value = eval(output_str)
             return value
 
-    return processed_str
+    return output_str
 
 
-def extract_examples(soup):
+def get_code_templates(code_snippets):
+    """
+    Get supported code templates from given code snippets
+
+    Parameters
+    ----------
+    code_snippets: dict
+        given code snippets to extract relevant templates
+    """
+
+    supported_slugs = ["javascript", "python", "ruby"]
+    code_templates = {}
+
+    for snippet in code_snippets:
+        if snippet["langSlug"] in supported_slugs:
+            code_templates.update(
+                {snippet["langSlug"].capitalize(): snippet["code"]})
+        if len(code_templates) == len(supported_slugs):
+            break
+
+    return code_templates
+
+
+def extract_test_cases(content):
+    """Extracts test cases from the given examples in the question content
+
+    The question bank (aka Leetcode) does not provide any sample test cases.
+    However, Leetcode provides examples in the question content.
+
+    Parameters
+    ----------
+    content: str
+        content of the question
+    """
+
+    soup = BeautifulSoup(content, "html.parser")
     if len(soup) == 0:
         return [None, None]
 
@@ -55,4 +117,5 @@ def extract_examples(soup):
             outputs.append(parse_output(tc_output))
         except Exception:
             return [None, None]
+
     return [inputs, outputs]
