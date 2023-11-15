@@ -9,7 +9,9 @@
 1. Clone the repository
 2. Create `.env` file with specified environment variables. Refer to [Environment Variables](#environment-variables) for the configuration
 3. Configure serverless.yml according to your needs. If you need help, you can refer to this [documentation](https://www.serverless.com/framework/docs/getting-started/).
-4. Run `pip3 install -r requirements.txt` to install the dependencies.
+4. Run `npm install -g serverless` to install the Serverless framework.
+5. Run `pip3 install -r requirements.txt` to install the dependencies.
+6. Invoke the function locally by running [this](#local-deployment)
 
 <br>
 
